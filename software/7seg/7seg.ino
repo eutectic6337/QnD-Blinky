@@ -1,6 +1,8 @@
 const char message[] = "dc615 ... dEFcon31   ";
 
 #define TOTAL_DIGITS 3
+#define DIGIT_ON_ms 100
+#define SCROLL_ms 200
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin 11
@@ -154,12 +156,12 @@ void setup_output_pins(void)
 }
 int send_to_display(char c, unsigned char pos)
 {
-  if(pos == 0 || pos > TOTAL_DIGITS) return 0;
-
   // all digits off
   digitalWrite(DIGIT_1_pin, HIGH);
   digitalWrite(DIGIT_2_pin, HIGH);
   digitalWrite(DIGIT_3_pin, HIGH);
+
+  if(pos == 0 || pos > TOTAL_DIGITS) return 0;
 
   unsigned segments = cached_7segment_map[(unsigned char)c];
 
@@ -243,6 +245,9 @@ unsigned next_char_to_display = 0;
 void loop() {
   for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
     send_to_display(message[message_index(next_char_to_display + i)], i + 1);
+    delay(DIGIT_ON_ms);
   }
   next_char_to_display = message_index(next_char_to_display + 1);
+  send_to_display(0, 0);
+  delay(SCROLL_ms);
 }
