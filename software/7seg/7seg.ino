@@ -1,5 +1,7 @@
 const char message[] = "dc615 ... dEFcon31   ";
 
+#define TOTAL_DIGITS 3
+
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin 11
 #define SEGMENT_B_pin 6
@@ -22,6 +24,7 @@ const char message[] = "dc615 ... dEFcon31   ";
   G
  E C
   D dp */
+#define none 0
 #define A 0x01
 #define B 0x02
 #define C 0x04
@@ -46,6 +49,8 @@ const struct {
   {'7',A|B|C},
   {'8',A|B|C|D|E|F|G},
   {'9',A|B|C|D|F|G},
+
+  {' ',none},
 
   {'.',dp},
   {'_',D},
@@ -149,7 +154,7 @@ void setup_output_pins(void)
 }
 int send_to_display(char c, unsigned char pos)
 {
-  if(pos == 0 || pos > 3) return 0;
+  if(pos == 0 || pos > TOTAL_DIGITS) return 0;
 
   // all digits off
   digitalWrite(DIGIT_1_pin, HIGH);
@@ -212,6 +217,7 @@ int send_to_display(char c, unsigned char pos)
 }
 
 // now eliminate these troublesome macros
+#undef none
 #undef A
 #undef B
 #undef C
@@ -220,13 +226,23 @@ int send_to_display(char c, unsigned char pos)
 #undef F
 #undef G
 #undef dp
+#undef unavailable
+
+const unsigned message_length = sizeof(message)/sizeof(message[0]) -1;
+unsigned message_index(unsigned i)
+{
+  return i % message_length;
+}
 
 void setup() {
   setup_7segment_map();
   setup_output_pins();
 }
 
+unsigned next_char_to_display = 0;
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
+    send_to_display(message[message_index(next_char_to_display + i)], i + 1);
+  }
+  next_char_to_display = message_index(next_char_to_display + 1);
 }
