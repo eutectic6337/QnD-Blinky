@@ -1,5 +1,6 @@
 const char message[] = "dc615 ... dEFcon31   ";
 
+// go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin 11
 #define SEGMENT_B_pin 6
 #define SEGMENT_C_pin 4
@@ -9,6 +10,7 @@ const char message[] = "dc615 ... dEFcon31   ";
 #define SEGMENT_G_pin 2
 #define SEGMENT_dp_pin 7
 
+// go low to drive a P-channel MOSFET to connect anode to Vbatt
 #define DIGIT_1_pin 5
 #define DIGIT_2_pin 10
 #define DIGIT_3_pin 8
@@ -113,31 +115,115 @@ const struct {
 };
 
 unsigned char cached_7segment_map[256];
-void populate_7segment_map(void)
+void setup_7segment_map(void)
 {
   for (int i= 0; i<sizeof(rawmap)/sizeof(raw_7segment_map[0]); i++) {
     cached_7segment_map[raw_7segment_map[i].c] = raw_7segment_map[i].segments;
   }
 }
-unsigned char map(char c)
+void setup_output_pins(void)
 {
-  return cached_7segment_map[(unsigned char)c];
+  pinMode(SEGMENT_A_pin, OUTPUT);
+  digitalWrite(SEGMENT_A_pin, LOW);
+  pinMode(SEGMENT_B_pin, OUTPUT);
+  digitalWrite(SEGMENT_B_pin, LOW);
+  pinMode(SEGMENT_C_pin, OUTPUT);
+  digitalWrite(SEGMENT_C_pin, LOW);
+  pinMode(SEGMENT_D_pin, OUTPUT);
+  digitalWrite(SEGMENT_D_pin, LOW);
+  pinMode(SEGMENT_E_pin, OUTPUT);
+  digitalWrite(SEGMENT_E_pin, LOW);
+  pinMode(SEGMENT_F_pin, OUTPUT);
+  digitalWrite(SEGMENT_F_pin, LOW);
+  pinMode(SEGMENT_G_pin, OUTPUT);
+  digitalWrite(SEGMENT_G_pin, LOW);
+  pinMode(SEGMENT_dp_pin, OUTPUT);
+  digitalWrite(SEGMENT_dp_pin, LOW);
+
+  pinMode(DIGIT_1_pin, OUTPUT);
+  digitalWrite(DIGIT_1_pin, HIGH);
+  pinMode(DIGIT_2_pin, OUTPUT);
+  digitalWrite(DIGIT_1_pin, HIGH);
+  pinMode(DIGIT_3_pin, OUTPUT);
+  digitalWrite(DIGIT_1_pin, HIGH);
+}
+int send_to_display(char c, unsigned char pos)
+{
+  if(pos == 0 || pos > 3) return 0;
+
+  // all digits off
+  digitalWrite(DIGIT_1_pin, HIGH);
+  digitalWrite(DIGIT_2_pin, HIGH);
+  digitalWrite(DIGIT_3_pin, HIGH);
+
+  unsigned segments = cached_7segment_map[(unsigned char)c];
+
+  if (segments & A) {
+    digitalWrite(SEGMENT_A_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_A_pin, LOW);
+  }
+  if (segments & B) {
+    digitalWrite(SEGMENT_B_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_B_pin, LOW);
+  }
+  if (segments & C) {
+    digitalWrite(SEGMENT_C_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_C_pin, LOW);
+  }
+  if (segments & D) {
+    digitalWrite(SEGMENT_D_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_D_pin, LOW);
+  } if (segments & E) {
+    digitalWrite(SEGMENT_E_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_E_pin, LOW);
+  }
+  if (segments & F) {
+    digitalWrite(SEGMENT_F_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_F_pin, LOW);
+  }
+  if (segments & G) {
+    digitalWrite(SEGMENT_G_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_G_pin, LOW);
+  }
+  if (segments & dp) {
+    digitalWrite(SEGMENT_dp_pin, HIGH);
+  } else {
+    digitalWrite(SEGMENT_dp_pin, LOW);
+  }
+
+  if (pos == 1) {
+    digitalWrite(DIGIT_1_pin, LOW);
+  }
+  else if (pos == 2) {
+    digitalWrite(DIGIT_2_pin, LOW);
+  }
+  else {
+    digitalWrite(DIGIT_3_pin, LOW);
+  }
+
+  return 1;
 }
 
-
-#undefine A
-#undefine B
-#undefine C
-#undefine D
-#undefine E
-#undefine F
-#undefine G
-#undefine dp
+// now eliminate these troublesome macros
+#undef A
+#undef B
+#undef C
+#undef D
+#undef E
+#undef F
+#undef G
+#undef dp
 
 void setup() {
-  // put your setup code here, to run once:
-  populate_7segment_map();
-
+  setup_7segment_map();
+  setup_output_pins();
 }
 
 void loop() {
