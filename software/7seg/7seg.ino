@@ -1,5 +1,18 @@
 const char message[] = "dc615 ... dEFcon31   ";
 
+#define SEGMENT_A_pin 11
+#define SEGMENT_B_pin 6
+#define SEGMENT_C_pin 4
+#define SEGMENT_D_pin 3
+#define SEGMENT_E_pin 1
+#define SEGMENT_F_pin 9
+#define SEGMENT_G_pin 2
+#define SEGMENT_dp_pin 7
+
+#define DIGIT_1_pin 5
+#define DIGIT_2_pin 10
+#define DIGIT_3_pin 8
+
 /* 7seg
 
   A  
