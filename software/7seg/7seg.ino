@@ -40,7 +40,7 @@ const char message[] = "dc615 ... dEFcon31   ";
 const struct {
   char c;
   unsigned char segments;
-} raw_7segment_map[] =
+} raw_7segment_map[] = {
   {'0', A|B|C|D|E|F},
   {'1', B|C},
   {'2',A|B|D|E|G},
@@ -99,7 +99,7 @@ const struct {
   {'D 0',unavailable},
   {'E',A|D|E|F|G},
   {'F',A|E|F|G},
-  {'G',unavailable},
+  {'G',A|C|D|E|F},
   {'H',B|C|E|F|G},
   {'I l,1',unavailable},
   {'J',B|C|D|E},
@@ -124,7 +124,7 @@ const struct {
 unsigned char cached_7segment_map[256];
 void setup_7segment_map(void)
 {
-  for (int i= 0; i<sizeof(rawmap)/sizeof(raw_7segment_map[0]); i++) {
+  for (int i= 0; i<sizeof(raw_7segment_map)/sizeof(raw_7segment_map[0]); i++) {
     cached_7segment_map[raw_7segment_map[i].c] = raw_7segment_map[i].segments;
   }
 }
@@ -239,10 +239,15 @@ unsigned message_index(unsigned i)
 void setup() {
   setup_7segment_map();
   setup_output_pins();
+  Serial.begin(9600);
 }
 
 unsigned next_char_to_display = 0;
 void loop() {
+  if (Serial.available() > 0) {
+    Serial.read();
+    Serial.println("github.com/eutectic6337/QnD-Blinky.git");
+  }
   for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
     send_to_display(message[message_index(next_char_to_display + i)], i + 1);
     delay(DIGIT_ON_ms);
