@@ -18,7 +18,10 @@
     "puuid": "0cd08a43973c438e8724061153957d87",
     "hasIdFlag": true,
     "x": 400,
-    "y": 300
+    "y": 300,
+    "utime": 1688666465,
+    "uuid": "4886a21073a54cc09c52d499c7236984",
+    "importFlag": 0
   },
   "canvas": "CA~1000~1000~#FFFFFF~yes~#CCCCCC~10~1000~1000~line~10~pixel~5~400~300",
   "shape": [
@@ -43,9 +46,9 @@
     "T~L~424~331.84~270~#0000FF~~9pt~~~~comment~XIAO ESP32-C3~1~~gge391~0~pinpart"
   ],
   "BBox": {
-    "x": 318,
+    "x": 319,
     "y": 240,
-    "width": 164,
+    "width": 162,
     "height": 120
   },
   "colors": {}
