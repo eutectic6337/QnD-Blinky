@@ -1,8 +1,8 @@
-const char message[] = "dc615 ... dEFcon31   ";
+const char message[] = "18. ";//"dc615 ... dEFcon31   ";
 
 #define TOTAL_DIGITS 3
-#define DIGIT_ON_ms 100
-#define SCROLL_ms 200
+#define DIGIT_ON_ms 10
+#define SCROLL_ms 2000
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin 11
@@ -121,11 +121,11 @@ const struct {
   {'Z',unavailable},
 };
 
-unsigned char cached_7segment_map[256];
+unsigned char permuted_7segment_map[256];
 void setup_7segment_map(void)
 {
   for (int i= 0; i<sizeof(raw_7segment_map)/sizeof(raw_7segment_map[0]); i++) {
-    cached_7segment_map[raw_7segment_map[i].c] = raw_7segment_map[i].segments;
+    permuted_7segment_map[raw_7segment_map[i].c] = raw_7segment_map[i].segments;
   }
 }
 void setup_output_pins(void)
@@ -163,7 +163,9 @@ int send_to_display(char c, unsigned char pos)
 
   if(pos == 0 || pos > TOTAL_DIGITS) return 0;
 
-  unsigned segments = cached_7segment_map[(unsigned char)c];
+  unsigned segments = permuted_7segment_map[(unsigned char)c];
+
+  Serial.printf("c=%c,s=%0x ",c,segments);
 
   if (segments & A) {
     digitalWrite(SEGMENT_A_pin, HIGH);
@@ -249,7 +251,9 @@ void loop() {
     Serial.println("github.com/eutectic6337/QnD-Blinky.git");
   }
   for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
-    send_to_display(message[message_index(next_char_to_display + i)], i + 1);
+    Serial.printf("[%c]i=%u", message[message_index(next_char_to_display + i)], i);
+    //send_to_display(message[message_index(next_char_to_display + i)], i + 1);
+    Serial.println();
     delay(DIGIT_ON_ms);
   }
   next_char_to_display = message_index(next_char_to_display + 1);
