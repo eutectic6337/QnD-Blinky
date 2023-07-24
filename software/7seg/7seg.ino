@@ -1,7 +1,6 @@
 const char message[] = "dc615 ... dEFcon31   ";
 //"01234567789. abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 
-
 #define TOTAL_DIGITS 3
 #define DIGIT_ON_ms 5
 #define DIGIT_OFF_ms (DIGIT_ON_ms/4)
@@ -9,29 +8,18 @@ const char message[] = "dc615 ... dEFcon31   ";
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
-//11
 #define SEGMENT_B_pin D5
-//6
 #define SEGMENT_C_pin D3
-//4
 #define SEGMENT_D_pin D2
-//3
 #define SEGMENT_E_pin D0
-//1
 #define SEGMENT_F_pin D8
-//9
 #define SEGMENT_G_pin D1
-//2
 #define SEGMENT_dp_pin D6
-//7
 
 // go low to drive a P-channel MOSFET to connect anode to Vbatt
 #define DIGIT_1_pin D4
-//5
 #define DIGIT_2_pin D9
-//10
 #define DIGIT_3_pin D7
-//8
 
 /* 7seg
 
@@ -135,7 +123,7 @@ const struct {
   {'Z',unavailable},
 };
 
-#if 1
+#if 0
 #define DEBUG Serial.print
 #define DEBUGf Serial.printf
 #define DEBUGln Serial.println
@@ -149,24 +137,30 @@ void enable_digit(unsigned char pos)
 {
   if (pos == 1) {
     digitalWrite(DIGIT_1_pin, LOW);
+    DEBUG("digit 1 low;");
   }
   else if (pos == 2) {
     digitalWrite(DIGIT_2_pin, LOW);
+    DEBUG("digit 2 low;");
   }
   else {
     digitalWrite(DIGIT_3_pin, LOW);
+    DEBUG("digit 3 low;");
   }
 }
 void disable_digit(unsigned char pos)
 {
   if (pos == 1) {
     digitalWrite(DIGIT_1_pin, HIGH);
+    DEBUG("digit 1 high;");
   }
   else if (pos == 2) {
     digitalWrite(DIGIT_2_pin, HIGH);
+    DEBUG("digit 2 high;");
   }
   else {
     digitalWrite(DIGIT_3_pin, HIGH);
+    DEBUG("digit 3 high;");
   }
 }
 int send_segments_to_display(unsigned char segments, unsigned char pos)
