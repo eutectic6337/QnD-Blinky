@@ -3,8 +3,9 @@ const char message[] = "dc615 ... dEFcon31   ";
 
 
 #define TOTAL_DIGITS 3
-#define DIGIT_ON_ms 5
-#define SCROLL_ms 150
+#define DIGIT_ON_ms 20
+#define DIGIT_OFF_ms 5
+#define SCROLL_ms 20
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
@@ -134,6 +135,92 @@ const struct {
   {'Z',unavailable},
 };
 
+#if 0
+#define DEBUG Serial.print
+#define DEBUGf Serial.printf
+#define DEBUGln Serial.println
+#else
+#define DEBUG (void)
+#define DEBUGf (void)
+#define DEBUGln (void)
+#endif
+
+int send_segments_to_display(unsigned char segments, unsigned char pos)
+{
+  if(pos == 0 || pos > TOTAL_DIGITS) return 0;
+
+  if (segments & A) {
+    digitalWrite(SEGMENT_A_pin, HIGH);
+    DEBUG("sA high;");
+  } else {
+    digitalWrite(SEGMENT_A_pin, LOW);
+    DEBUG("sA low;");
+  }
+  if (segments & B) {
+    digitalWrite(SEGMENT_B_pin, HIGH);
+    DEBUG("sB high;");
+  } else {
+    digitalWrite(SEGMENT_B_pin, LOW);
+    DEBUG("sB low;");
+  }
+  if (segments & C) {
+    digitalWrite(SEGMENT_C_pin, HIGH);
+    DEBUG("sC high;");
+  } else {
+    digitalWrite(SEGMENT_C_pin, LOW);
+    DEBUG("sC low;");
+  }
+  if (segments & D) {
+    digitalWrite(SEGMENT_D_pin, HIGH);
+    DEBUG("sD high;");
+  } else {
+    digitalWrite(SEGMENT_D_pin, LOW);
+    DEBUG("sD low;");
+  } if (segments & E) {
+    digitalWrite(SEGMENT_E_pin, HIGH);
+    DEBUG("sE high;");
+  } else {
+    digitalWrite(SEGMENT_E_pin, LOW);
+    DEBUG("sE low;");
+  }
+  if (segments & F) {
+    digitalWrite(SEGMENT_F_pin, HIGH);
+    DEBUG("sF high;");
+  } else {
+    digitalWrite(SEGMENT_F_pin, LOW);
+    DEBUG("sF low;");
+  }
+  if (segments & G) {
+    digitalWrite(SEGMENT_G_pin, HIGH);
+    DEBUG("sG high;");
+  } else {
+    digitalWrite(SEGMENT_G_pin, LOW);
+    DEBUG("sG low;");
+  }
+  if (segments & dp) {
+    digitalWrite(SEGMENT_dp_pin, HIGH);
+    DEBUG("dp high;");
+  } else {
+    digitalWrite(SEGMENT_dp_pin, LOW);
+    DEBUG("dp low;");
+  }
+
+  if (pos == 1) {
+    digitalWrite(DIGIT_1_pin, LOW);
+    DEBUG("digit 1 low;");
+  }
+  else if (pos == 2) {
+    digitalWrite(DIGIT_2_pin, LOW);
+    DEBUG("digit 2 low;");
+  }
+  else {
+    digitalWrite(DIGIT_3_pin, LOW);
+    DEBUG("digit 3 low;");
+  }
+
+  return 1;
+}
+
 unsigned char permuted_7segment_map[256];
 void setup_7segment_map(void)
 {
@@ -167,89 +254,14 @@ void setup_output_pins(void)
   pinMode(DIGIT_3_pin, OUTPUT);
   digitalWrite(DIGIT_1_pin, HIGH);
 }
-int send_to_display(char c, unsigned char pos)
+int send_char_to_display(char c, unsigned char pos)
 {
   // all digits off
   digitalWrite(DIGIT_1_pin, HIGH);
   digitalWrite(DIGIT_2_pin, HIGH);
   digitalWrite(DIGIT_3_pin, HIGH);
 
-  if(pos == 0 || pos > TOTAL_DIGITS) return 0;
-
-  unsigned segments = permuted_7segment_map[(unsigned char)c];
-
-  Serial.printf("c=%c,s=%0x ",c,segments);
-
-  if (segments & A) {
-    digitalWrite(SEGMENT_A_pin, HIGH);
-    Serial.print("sA high;");
-  } else {
-    digitalWrite(SEGMENT_A_pin, LOW);
-    Serial.print("sA low;");
-  }
-  if (segments & B) {
-    digitalWrite(SEGMENT_B_pin, HIGH);
-    Serial.print("sB high;");
-  } else {
-    digitalWrite(SEGMENT_B_pin, LOW);
-    Serial.print("sB low;");
-  }
-  if (segments & C) {
-    digitalWrite(SEGMENT_C_pin, HIGH);
-    Serial.print("sC high;");
-  } else {
-    digitalWrite(SEGMENT_C_pin, LOW);
-    Serial.print("sC low;");
-  }
-  if (segments & D) {
-    digitalWrite(SEGMENT_D_pin, HIGH);
-    Serial.print("sD high;");
-  } else {
-    digitalWrite(SEGMENT_D_pin, LOW);
-    Serial.print("sD low;");
-  } if (segments & E) {
-    digitalWrite(SEGMENT_E_pin, HIGH);
-    Serial.print("sE high;");
-  } else {
-    digitalWrite(SEGMENT_E_pin, LOW);
-    Serial.print("sE low;");
-  }
-  if (segments & F) {
-    digitalWrite(SEGMENT_F_pin, HIGH);
-    Serial.print("sF high;");
-  } else {
-    digitalWrite(SEGMENT_F_pin, LOW);
-    Serial.print("sF low;");
-  }
-  if (segments & G) {
-    digitalWrite(SEGMENT_G_pin, HIGH);
-    Serial.print("sG high;");
-  } else {
-    digitalWrite(SEGMENT_G_pin, LOW);
-    Serial.print("sG low;");
-  }
-  if (segments & dp) {
-    digitalWrite(SEGMENT_dp_pin, HIGH);
-    Serial.print("dp high;");
-  } else {
-    digitalWrite(SEGMENT_dp_pin, LOW);
-    Serial.print("dp low;");
-  }
-
-  if (pos == 1) {
-    digitalWrite(DIGIT_1_pin, LOW);
-    Serial.print("digit 1 low;");
-  }
-  else if (pos == 2) {
-    digitalWrite(DIGIT_2_pin, LOW);
-    Serial.print("digit 2 low;");
-  }
-  else {
-    digitalWrite(DIGIT_3_pin, LOW);
-    Serial.print("digit 3 low;");
-  }
-
-  return 1;
+  return send_segments_to_display(permuted_7segment_map[(unsigned char)c], pos);
 }
 
 // now eliminate these troublesome macros
@@ -284,18 +296,18 @@ void loop() {
   }
 
   for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
-    Serial.printf("[%c]i=%u ", message[message_index(next_char_to_display + i)], i);
-    send_to_display(message[message_index(next_char_to_display + i)], i + 1);
-    Serial.println();
+    DEBUGf("[%c]i=%u ", message[message_index(next_char_to_display + i)], i);
+    send_char_to_display(message[message_index(next_char_to_display + i)], i + 1);
+    DEBUGf("\n");
     delay(DIGIT_ON_ms);
-    send_to_display(' ', i+1);
+    send_char_to_display(' ', i+1);
   }
 
   next_char_to_display = message_index(next_char_to_display + 1);
-  //send_to_display(' ', 1);
-  //send_to_display(' ', 2);
-  //send_to_display(' ', 3);
+  //send_char_to_display(' ', 1);
+  //send_char_to_display(' ', 2);
+  //send_char_to_display(' ', 3);
 
-  //send_to_display(0, 0);
+  //send_char_to_display(0, 0);
   delay(SCROLL_ms);
 }
