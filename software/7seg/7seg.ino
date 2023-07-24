@@ -1,23 +1,36 @@
-const char message[] = "18. ";//"dc615 ... dEFcon31   ";
+const char message[] = "dc615 ... dEFcon31   ";
+//"01234567789. abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+
 
 #define TOTAL_DIGITS 3
-#define DIGIT_ON_ms 10
-#define SCROLL_ms 2000
+#define DIGIT_ON_ms 5
+#define SCROLL_ms 150
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
-#define SEGMENT_A_pin 11
-#define SEGMENT_B_pin 6
-#define SEGMENT_C_pin 4
-#define SEGMENT_D_pin 3
-#define SEGMENT_E_pin 1
-#define SEGMENT_F_pin 9
-#define SEGMENT_G_pin 2
-#define SEGMENT_dp_pin 7
+#define SEGMENT_A_pin D10
+//11
+#define SEGMENT_B_pin D5
+//6
+#define SEGMENT_C_pin D3
+//4
+#define SEGMENT_D_pin D2
+//3
+#define SEGMENT_E_pin D0
+//1
+#define SEGMENT_F_pin D8
+//9
+#define SEGMENT_G_pin D1
+//2
+#define SEGMENT_dp_pin D6
+//7
 
 // go low to drive a P-channel MOSFET to connect anode to Vbatt
-#define DIGIT_1_pin 5
-#define DIGIT_2_pin 10
-#define DIGIT_3_pin 8
+#define DIGIT_1_pin D4
+//5
+#define DIGIT_2_pin D9
+//10
+#define DIGIT_3_pin D7
+//8
 
 /* 7seg
 
@@ -169,52 +182,71 @@ int send_to_display(char c, unsigned char pos)
 
   if (segments & A) {
     digitalWrite(SEGMENT_A_pin, HIGH);
+    Serial.print("sA high;");
   } else {
     digitalWrite(SEGMENT_A_pin, LOW);
+    Serial.print("sA low;");
   }
   if (segments & B) {
     digitalWrite(SEGMENT_B_pin, HIGH);
+    Serial.print("sB high;");
   } else {
     digitalWrite(SEGMENT_B_pin, LOW);
+    Serial.print("sB low;");
   }
   if (segments & C) {
     digitalWrite(SEGMENT_C_pin, HIGH);
+    Serial.print("sC high;");
   } else {
     digitalWrite(SEGMENT_C_pin, LOW);
+    Serial.print("sC low;");
   }
   if (segments & D) {
     digitalWrite(SEGMENT_D_pin, HIGH);
+    Serial.print("sD high;");
   } else {
     digitalWrite(SEGMENT_D_pin, LOW);
+    Serial.print("sD low;");
   } if (segments & E) {
     digitalWrite(SEGMENT_E_pin, HIGH);
+    Serial.print("sE high;");
   } else {
     digitalWrite(SEGMENT_E_pin, LOW);
+    Serial.print("sE low;");
   }
   if (segments & F) {
     digitalWrite(SEGMENT_F_pin, HIGH);
+    Serial.print("sF high;");
   } else {
     digitalWrite(SEGMENT_F_pin, LOW);
+    Serial.print("sF low;");
   }
   if (segments & G) {
     digitalWrite(SEGMENT_G_pin, HIGH);
+    Serial.print("sG high;");
   } else {
     digitalWrite(SEGMENT_G_pin, LOW);
+    Serial.print("sG low;");
   }
   if (segments & dp) {
     digitalWrite(SEGMENT_dp_pin, HIGH);
+    Serial.print("dp high;");
   } else {
     digitalWrite(SEGMENT_dp_pin, LOW);
+    Serial.print("dp low;");
   }
 
   if (pos == 1) {
     digitalWrite(DIGIT_1_pin, LOW);
+    Serial.print("digit 1 low;");
   }
   else if (pos == 2) {
     digitalWrite(DIGIT_2_pin, LOW);
+    Serial.print("digit 2 low;");
   }
   else {
     digitalWrite(DIGIT_3_pin, LOW);
+    Serial.print("digit 3 low;");
   }
 
   return 1;
@@ -250,13 +282,20 @@ void loop() {
     Serial.read();
     Serial.println("github.com/eutectic6337/QnD-Blinky.git");
   }
+
   for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
-    Serial.printf("[%c]i=%u", message[message_index(next_char_to_display + i)], i);
-    //send_to_display(message[message_index(next_char_to_display + i)], i + 1);
+    Serial.printf("[%c]i=%u ", message[message_index(next_char_to_display + i)], i);
+    send_to_display(message[message_index(next_char_to_display + i)], i + 1);
     Serial.println();
     delay(DIGIT_ON_ms);
+    send_to_display(' ', i+1);
   }
+
   next_char_to_display = message_index(next_char_to_display + 1);
-  send_to_display(0, 0);
+  //send_to_display(' ', 1);
+  //send_to_display(' ', 2);
+  //send_to_display(' ', 3);
+
+  //send_to_display(0, 0);
   delay(SCROLL_ms);
 }
