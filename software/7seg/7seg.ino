@@ -3,8 +3,8 @@ const char message[] = "dc615 ... dEFcon31   ";
 
 #define TOTAL_DIGITS 3
 #define DIGIT_ON_ms 5
-#define DIGIT_OFF_ms (DIGIT_ON_ms/4)
-#define SCROLL_ms (DIGIT_ON_ms*TOTAL_DIGITS*8)
+#define DIGIT_OFF_ms (DIGIT_ON_ms*2/3)
+#define SCROLL_ms ((DIGIT_ON_ms+DIGIT_OFF_ms)*TOTAL_DIGITS*7)
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
@@ -264,9 +264,18 @@ void setup_7segment_map(void)
   for (unsigned i= 0; i<sizeof(raw_7segment_map)/sizeof(raw_7segment_map[0]); i++) {
     unsigned segments = raw_7segment_map[i].segments;
     permuted_7segment_map[raw_7segment_map[i].c] = segments;
-    //send_segments_to_display(segments, 1);
-    //send_segments_to_display(segments, 2);
-    //send_segments_to_display(segments, 3);
+    send_segments_to_display(segments, 1);
+    delay(DIGIT_ON_ms);
+    send_segments_to_display(none, 1);
+    delay(DIGIT_OFF_ms);
+    send_segments_to_display(segments, 2);
+    delay(DIGIT_ON_ms);
+    send_segments_to_display(none, 2);
+    delay(DIGIT_OFF_ms);
+    send_segments_to_display(segments, 3);
+    delay(DIGIT_ON_ms);
+    send_segments_to_display(none, 3);
+    delay(DIGIT_OFF_ms);
   }
 }
 int send_char_to_display(char c, unsigned char pos)
