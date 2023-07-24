@@ -3,9 +3,9 @@ const char message[] = "dc615 ... dEFcon31   ";
 
 
 #define TOTAL_DIGITS 3
-#define DIGIT_ON_ms 20
-#define DIGIT_OFF_ms 5
-#define SCROLL_ms 20
+#define DIGIT_ON_ms 5
+#define DIGIT_OFF_ms (DIGIT_ON_ms/4)
+#define SCROLL_ms (DIGIT_ON_ms*TOTAL_DIGITS*8)
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
@@ -135,7 +135,7 @@ const struct {
   {'Z',unavailable},
 };
 
-#if 0
+#if 1
 #define DEBUG Serial.print
 #define DEBUGf Serial.printf
 #define DEBUGln Serial.println
@@ -145,8 +145,36 @@ const struct {
 #define DEBUGln (void)
 #endif
 
+void enable_digit(unsigned char pos)
+{
+  if (pos == 1) {
+    digitalWrite(DIGIT_1_pin, LOW);
+  }
+  else if (pos == 2) {
+    digitalWrite(DIGIT_2_pin, LOW);
+  }
+  else {
+    digitalWrite(DIGIT_3_pin, LOW);
+  }
+}
+void disable_digit(unsigned char pos)
+{
+  if (pos == 1) {
+    digitalWrite(DIGIT_1_pin, HIGH);
+  }
+  else if (pos == 2) {
+    digitalWrite(DIGIT_2_pin, HIGH);
+  }
+  else {
+    digitalWrite(DIGIT_3_pin, HIGH);
+  }
+}
 int send_segments_to_display(unsigned char segments, unsigned char pos)
 {
+  disable_digit(1);
+  disable_digit(2);
+  disable_digit(3);
+
   if(pos == 0 || pos > TOTAL_DIGITS) return 0;
 
   if (segments & A) {
@@ -205,29 +233,11 @@ int send_segments_to_display(unsigned char segments, unsigned char pos)
     DEBUG("dp low;");
   }
 
-  if (pos == 1) {
-    digitalWrite(DIGIT_1_pin, LOW);
-    DEBUG("digit 1 low;");
-  }
-  else if (pos == 2) {
-    digitalWrite(DIGIT_2_pin, LOW);
-    DEBUG("digit 2 low;");
-  }
-  else {
-    digitalWrite(DIGIT_3_pin, LOW);
-    DEBUG("digit 3 low;");
-  }
+  enable_digit(pos);
 
   return 1;
 }
 
-unsigned char permuted_7segment_map[256];
-void setup_7segment_map(void)
-{
-  for (int i= 0; i<sizeof(raw_7segment_map)/sizeof(raw_7segment_map[0]); i++) {
-    permuted_7segment_map[raw_7segment_map[i].c] = raw_7segment_map[i].segments;
-  }
-}
 void setup_output_pins(void)
 {
   pinMode(SEGMENT_A_pin, OUTPUT);
@@ -254,13 +264,19 @@ void setup_output_pins(void)
   pinMode(DIGIT_3_pin, OUTPUT);
   digitalWrite(DIGIT_1_pin, HIGH);
 }
+unsigned char permuted_7segment_map[256];
+void setup_7segment_map(void)
+{
+  for (unsigned i= 0; i<sizeof(raw_7segment_map)/sizeof(raw_7segment_map[0]); i++) {
+    unsigned segments = raw_7segment_map[i].segments;
+    permuted_7segment_map[raw_7segment_map[i].c] = segments;
+    //send_segments_to_display(segments, 1);
+    //send_segments_to_display(segments, 2);
+    //send_segments_to_display(segments, 3);
+  }
+}
 int send_char_to_display(char c, unsigned char pos)
 {
-  // all digits off
-  digitalWrite(DIGIT_1_pin, HIGH);
-  digitalWrite(DIGIT_2_pin, HIGH);
-  digitalWrite(DIGIT_3_pin, HIGH);
-
   return send_segments_to_display(permuted_7segment_map[(unsigned char)c], pos);
 }
 
@@ -283,9 +299,9 @@ unsigned message_index(unsigned i)
 }
 
 void setup() {
-  setup_7segment_map();
-  setup_output_pins();
   Serial.begin(9600);
+  setup_output_pins();
+  setup_7segment_map();
 }
 
 unsigned next_char_to_display = 0;
@@ -296,17 +312,19 @@ void loop() {
   }
 
   for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
+    unsigned j = i+1;
     DEBUGf("[%c]i=%u ", message[message_index(next_char_to_display + i)], i);
-    send_char_to_display(message[message_index(next_char_to_display + i)], i + 1);
+    send_char_to_display(message[message_index(next_char_to_display + i)], j);
     DEBUGf("\n");
     delay(DIGIT_ON_ms);
-    send_char_to_display(' ', i+1);
+    send_char_to_display(' ', j);
+    delay(DIGIT_OFF_ms);
   }
 
   next_char_to_display = message_index(next_char_to_display + 1);
-  //send_char_to_display(' ', 1);
-  //send_char_to_display(' ', 2);
-  //send_char_to_display(' ', 3);
+  send_char_to_display(' ', 1);
+  send_char_to_display(' ', 2);
+  send_char_to_display(' ', 3);
 
   //send_char_to_display(0, 0);
   delay(SCROLL_ms);
