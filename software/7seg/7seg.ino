@@ -6,6 +6,11 @@ const char message[] = "dc615 ... dEFcon31   ";
 #define DIGIT_OFF_ms (DIGIT_ON_ms*2/3)
 #define SCROLL_ms ((DIGIT_ON_ms+DIGIT_OFF_ms)*TOTAL_DIGITS*7)
 
+#define DIGIT_ON_count 100
+#define DIGIT_OFF_count 100
+#define SCROLL_count 500
+
+
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
 #define SEGMENT_B_pin D5
@@ -133,44 +138,38 @@ const struct {
 #define DEBUGln (void)
 #endif
 
-void enable_digit(unsigned char pos)
+void enable_digit_1(void)
 {
-  if (pos == 1) {
-    digitalWrite(DIGIT_1_pin, LOW);
-    DEBUG("digit 1 low;");
-  }
-  else if (pos == 2) {
-    digitalWrite(DIGIT_2_pin, LOW);
-    DEBUG("digit 2 low;");
-  }
-  else {
-    digitalWrite(DIGIT_3_pin, LOW);
-    DEBUG("digit 3 low;");
-  }
+  digitalWrite(DIGIT_1_pin, LOW);
+  DEBUG("digit 1 low;");
 }
-void disable_digit(unsigned char pos)
+void disable_digit_1(void)
 {
-  if (pos == 1) {
-    digitalWrite(DIGIT_1_pin, HIGH);
-    DEBUG("digit 1 high;");
-  }
-  else if (pos == 2) {
-    digitalWrite(DIGIT_2_pin, HIGH);
-    DEBUG("digit 2 high;");
-  }
-  else {
-    digitalWrite(DIGIT_3_pin, HIGH);
-    DEBUG("digit 3 high;");
-  }
+  digitalWrite(DIGIT_1_pin, HIGH);
+  DEBUG("digit 1 high;");
 }
-int send_segments_to_display(unsigned char segments, unsigned char pos)
+void enable_digit_2(void)
 {
-  disable_digit(1);
-  disable_digit(2);
-  disable_digit(3);
-
-  if(pos == 0 || pos > TOTAL_DIGITS) return 0;
-
+  digitalWrite(DIGIT_2_pin, LOW);
+  DEBUG("digit 2 low;");
+}
+void disable_digit_2(void)
+{
+  digitalWrite(DIGIT_2_pin, HIGH);
+  DEBUG("digit 2 high;");
+}
+void enable_digit_3(void)
+{
+  digitalWrite(DIGIT_3_pin, LOW);
+  DEBUG("digit 3 low;");
+}
+void disable_digit_3(void)
+{
+  digitalWrite(DIGIT_3_pin, HIGH);
+  DEBUG("digit 3 high;");
+}
+void send_segments_to_display(unsigned char segments)
+{
   if (segments & A) {
     digitalWrite(SEGMENT_A_pin, HIGH);
     DEBUG("sA high;");
@@ -226,11 +225,18 @@ int send_segments_to_display(unsigned char segments, unsigned char pos)
     digitalWrite(SEGMENT_dp_pin, LOW);
     DEBUG("dp low;");
   }
-
-  enable_digit(pos);
-
-  return 1;
 }
+// now eliminate these troublesome macros
+#undef none
+#undef A
+#undef B
+#undef C
+#undef D
+#undef E
+#undef F
+#undef G
+#undef dp
+#undef unavailable
 
 void setup_output_pins(void)
 {
@@ -264,36 +270,21 @@ void setup_7segment_map(void)
   for (unsigned i= 0; i<sizeof(raw_7segment_map)/sizeof(raw_7segment_map[0]); i++) {
     unsigned segments = raw_7segment_map[i].segments;
     permuted_7segment_map[raw_7segment_map[i].c] = segments;
-    send_segments_to_display(segments, 1);
+    send_segments_to_display(segments);
+    enable_digit_1();
     delay(DIGIT_ON_ms);
-    send_segments_to_display(none, 1);
+    disable_digit_1();
     delay(DIGIT_OFF_ms);
-    send_segments_to_display(segments, 2);
+    enable_digit_2();
     delay(DIGIT_ON_ms);
-    send_segments_to_display(none, 2);
+    disable_digit_2();
     delay(DIGIT_OFF_ms);
-    send_segments_to_display(segments, 3);
+    enable_digit_3();
     delay(DIGIT_ON_ms);
-    send_segments_to_display(none, 3);
+    disable_digit_3();
     delay(DIGIT_OFF_ms);
   }
 }
-int send_char_to_display(char c, unsigned char pos)
-{
-  return send_segments_to_display(permuted_7segment_map[(unsigned char)c], pos);
-}
-
-// now eliminate these troublesome macros
-#undef none
-#undef A
-#undef B
-#undef C
-#undef D
-#undef E
-#undef F
-#undef G
-#undef dp
-#undef unavailable
 
 const unsigned message_length = sizeof(message)/sizeof(message[0]) -1;
 unsigned message_index(unsigned i)
@@ -301,34 +292,87 @@ unsigned message_index(unsigned i)
   return i % message_length;
 }
 
+unsigned char message_to_display[TOTAL_DIGITS];
+unsigned char segments_to_display[TOTAL_DIGITS];
+unsigned next_char_to_display;
+void setup_segment_display(void)
+{
+  message_to_display[0] = message[0];
+  segments_to_display[0] = permuted_7segment_map[message_to_display[0]];
+  message_to_display[1] = message[1];
+  segments_to_display[1] = permuted_7segment_map[message_to_display[1]];
+  message_to_display[2] = message[2];
+  segments_to_display[2] = permuted_7segment_map[message_to_display[2]];
+  next_char_to_display = 3;
+}
+void scroll_message(void)
+{
+  message_to_display[0] = message_to_display[1];
+  segments_to_display[0] = segments_to_display[1];
+  message_to_display[0] = message_to_display[2];
+  segments_to_display[1] = segments_to_display[2];
+  next_char_to_display = message_index(next_char_to_display + 1);
+  message_to_display[2] = message[next_char_to_display];
+  segments_to_display[2] = permuted_7segment_map[message_to_display[2]];
+}
+
 void setup() {
   Serial.begin(9600);
   setup_output_pins();
   setup_7segment_map();
+  setup_segment_display();
 }
 
-unsigned next_char_to_display = 0;
+
+unsigned display_digit_1 = DIGIT_ON_count;
+unsigned display_digit_2 = 0;
+unsigned display_digit_3 = 0;
+unsigned digits_off = 0;
+unsigned scroll = SCROLL_count;
+
 void loop() {
   if (Serial.available() > 0) {
     Serial.read();
     Serial.println("github.com/eutectic6337/QnD-Blinky.git");
   }
-
-  for (unsigned i = 0; i < TOTAL_DIGITS; i++) {
-    unsigned j = i+1;
-    DEBUGf("[%c]i=%u ", message[message_index(next_char_to_display + i)], i);
-    send_char_to_display(message[message_index(next_char_to_display + i)], j);
-    DEBUGf("\n");
-    delay(DIGIT_ON_ms);
-    send_char_to_display(' ', j);
-    delay(DIGIT_OFF_ms);
+  if (display_digit_1) {
+    disable_digit_2();
+    disable_digit_3();
+    enable_digit_1();
+    send_segments_to_display(segments_to_display[0]);
+    if (--display_digit_1 == 0) {
+      display_digit_2 = DIGIT_ON_count;
+    }
+  }
+  if (display_digit_2) {
+    disable_digit_1();
+    disable_digit_3();
+    enable_digit_2();
+    send_segments_to_display(segments_to_display[1]);
+    if (--display_digit_2 == 0) {
+      display_digit_3 = DIGIT_ON_count;
+    }
+  }
+  if (display_digit_3) {
+    disable_digit_1();
+    disable_digit_2();
+    enable_digit_3();
+    send_segments_to_display(segments_to_display[2]);
+    if (--display_digit_3 == 0) {
+      digits_off = DIGIT_OFF_count;
+    }
+  }
+  if (digits_off) {
+    enable_digit_1();
+    enable_digit_2();
+    enable_digit_3();
+    send_segments_to_display(0);
+    if (--digits_off == 0) {
+      display_digit_1 = DIGIT_ON_count;
+    }
   }
 
-  next_char_to_display = message_index(next_char_to_display + 1);
-  send_char_to_display(' ', 1);
-  send_char_to_display(' ', 2);
-  send_char_to_display(' ', 3);
-
-  //send_char_to_display(0, 0);
-  delay(SCROLL_ms);
+  if (--scroll == 0) {
+    scroll_message();
+  }
 }
