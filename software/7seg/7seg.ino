@@ -1,15 +1,21 @@
 const char message[] = "dc615 ... dEFcon31   ";
 //"01234567789. abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 
+#if 0
+#define DEBUG Serial.print
+#define DEBUGf Serial.printf
+#define DEBUGln Serial.println
+#else
+#define DEBUG (void)
+#define DEBUGf (void)
+#define DEBUGln (void)
+#endif
+
 #define TOTAL_DIGITS 3
-#define DIGIT_ON_ms 5
-#define DIGIT_OFF_ms (DIGIT_ON_ms*2/3)
-#define SCROLL_ms ((DIGIT_ON_ms+DIGIT_OFF_ms)*TOTAL_DIGITS*7)
 
-#define DIGIT_ON_count 100
-#define DIGIT_OFF_count 100
-#define SCROLL_count 500
-
+#define DIGIT_ON_count 10
+#define DIGIT_OFF_count 10
+#define SCROLL_count 100
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
@@ -128,51 +134,41 @@ const struct {
   {'Z',unavailable},
 };
 
-#if 1
-#define DEBUG Serial.print
-#define DEBUGf Serial.printf
-#define DEBUGln Serial.println
-#else
-#define DEBUG (void)
-#define DEBUGf (void)
-#define DEBUGln (void)
-#endif
-
 void enable_digit_1(void)
 {
   digitalWrite(DIGIT_1_pin, LOW);
-  DEBUG("digit 1 low;");
+  DEBUG("D1;");
 }
 void disable_digit_1(void)
 {
   digitalWrite(DIGIT_1_pin, HIGH);
-  DEBUG("digit 1 high;");
+  DEBUG("d1;");
 }
 void enable_digit_2(void)
 {
   digitalWrite(DIGIT_2_pin, LOW);
-  DEBUG("digit 2 low;");
+  DEBUG("D2;");
 }
 void disable_digit_2(void)
 {
   digitalWrite(DIGIT_2_pin, HIGH);
-  DEBUG("digit 2 high;");
+  DEBUG("d2;");
 }
 void enable_digit_3(void)
 {
   digitalWrite(DIGIT_3_pin, LOW);
-  DEBUG("digit 3 low;");
+  DEBUG("D3;");
 }
 void disable_digit_3(void)
 {
   digitalWrite(DIGIT_3_pin, HIGH);
-  DEBUG("digit 3 high;");
+  DEBUG("d3;");
 }
 void send_segments_to_display(unsigned char segments)
 {
   if (segments & A) {
     digitalWrite(SEGMENT_A_pin, HIGH);
-    DEBUG("sA high;");
+    DEBUG("sA;");
   } else {
     digitalWrite(SEGMENT_A_pin, LOW);
     DEBUG("sA low;");
@@ -272,17 +268,11 @@ void setup_7segment_map(void)
     permuted_7segment_map[raw_7segment_map[i].c] = segments;
     send_segments_to_display(segments);
     enable_digit_1();
-    delay(DIGIT_ON_ms);
     disable_digit_1();
-    delay(DIGIT_OFF_ms);
     enable_digit_2();
-    delay(DIGIT_ON_ms);
     disable_digit_2();
-    delay(DIGIT_OFF_ms);
     enable_digit_3();
-    delay(DIGIT_ON_ms);
     disable_digit_3();
-    delay(DIGIT_OFF_ms);
   }
 }
 
