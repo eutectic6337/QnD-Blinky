@@ -128,7 +128,7 @@ const struct {
   {'Z',unavailable},
 };
 
-#if 0
+#if 1
 #define DEBUG Serial.print
 #define DEBUGf Serial.printf
 #define DEBUGln Serial.println
@@ -307,6 +307,7 @@ void setup_segment_display(void)
 }
 void scroll_message(void)
 {
+  DEBUGf("scroll from [%.3s]", message_to_display);
   message_to_display[0] = message_to_display[1];
   segments_to_display[0] = segments_to_display[1];
   message_to_display[0] = message_to_display[2];
@@ -314,6 +315,7 @@ void scroll_message(void)
   next_char_to_display = message_index(next_char_to_display + 1);
   message_to_display[2] = message[next_char_to_display];
   segments_to_display[2] = permuted_7segment_map[message_to_display[2]];
+  DEBUGf(" to [%.3s]\n", message_to_display);
 }
 
 void setup() {
@@ -336,6 +338,7 @@ void loop() {
     Serial.println("github.com/eutectic6337/QnD-Blinky.git");
   }
   if (display_digit_1) {
+    DEBUG("1.");
     disable_digit_2();
     disable_digit_3();
     enable_digit_1();
@@ -345,6 +348,7 @@ void loop() {
     }
   }
   if (display_digit_2) {
+    DEBUG("2.");
     disable_digit_1();
     disable_digit_3();
     enable_digit_2();
@@ -354,6 +358,7 @@ void loop() {
     }
   }
   if (display_digit_3) {
+    DEBUG("3.");
     disable_digit_1();
     disable_digit_2();
     enable_digit_3();
@@ -363,6 +368,7 @@ void loop() {
     }
   }
   if (digits_off) {
+    DEBUG("0.");
     enable_digit_1();
     enable_digit_2();
     enable_digit_3();
