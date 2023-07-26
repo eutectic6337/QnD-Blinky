@@ -14,8 +14,8 @@ const char message[] = "dc615 at dEFcon31   ";
 #define TOTAL_DIGITS 3
 
 #define DIGIT_ON_count 1
-#define DIGIT_OFF_count 7
-#define SCROLL_count 180
+#define DIGIT_OFF_count 11
+#define SCROLL_count 150
 
 // go high to drive an N-channel MOSFET to connect cathode to 0V
 #define SEGMENT_A_pin D10
