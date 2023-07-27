@@ -1,4 +1,4 @@
-const char message[] = "dc615 at dEFcon31   ";
+const char message[] = "dc615 - dEFcon31   ";
 //"01234567789. abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 
 #if 0
